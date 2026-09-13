@@ -1,13 +1,14 @@
 import { cn } from '../lib/utils';
+import {Button} from '../components/ui/button';
 
 const Page = () => {
   const something = true;
 
   return (
-    <div className={cn('text-red-500 font-extrabold',
-      something == true && 'text-green-500'
-    )}>
-      Hello World
+    <div className="min-h-screen min-w-screen flex items-center justify-center ">
+      <Button variant = "secondary">
+        Click me
+      </Button>
     </div>
   )
 };
