@@ -10,18 +10,68 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-} // how can i put url in version 7 prisma is 
+}
+// how can i put url in version 7 prisma is 
 
 model User {
-  id    Int    @id @default(autoincrement())
-  email String @unique
-  posts Post[]
-} // user has relation to many posts
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
 
-model Post {
-  id        Int     @id @default(autoincrement())
-  title     String
-  published Boolean @default(false)
-  userId    Int
-  user User @relation(fields: [userId], references: [id])
-} // but post has relation to only one user
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String? // user agent means the browser that the user is using
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id 
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade) 
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String // identifier is email
+  value      String // value is token
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification") // mapping is used because we are using prisma client hence we need to map it to the database
+}

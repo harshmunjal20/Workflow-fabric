@@ -1,23 +1,28 @@
-// page is now left as a server component
-import { Client } from './client';
-import {Suspense} from 'react';
-import { trpc, getQueryClient } from '@/trpc/server';
-import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import { requireAuth } from '@/lib/auth-utils';
+import {caller}  from '@/trpc/server';
+import {LogoutButton}  from  './logout';
 
+// we want a protected server component ie, login api should not give me login page even when i have logged in, also i want that home page should not be accessed directly , ie.login is mandatory
 const Page = async () => {
-  const queryClient = getQueryClient();
-  void queryClient.query(trpc.getUsers.queryOptions()); // it is leveraging the speed of server
+  await requireAuth();
+
+  const data = await caller.getUsers();
 
   return (
-    <div className="min-h-screen min-w-screen flex items-center justify-center ">
-      <HydrationBoundary state = {dehydrate(queryClient)}>
-        <Suspense fallback={<p> Loading... </p>}>
-          <Client />
-        </Suspense>
-      </HydrationBoundary>
+    <div className="min-h-screen min-w-screen flex items-center justify-center flex-col gap-y-6">
+      Protected server component
+      <pre className="text-left whitespace-pre-wrap">
+        {JSON.stringify(data, null, 3)}
+      </pre>
+
+      <LogoutButton/>
     </div> 
-    // state = server data in shippable form (plain json)
-  )// It is the bridge between server side data and client side cache , so your app doesn't refetch data the server already got on each request
+  ); // log out will work when user is signed in // i want only logged in users to see this 
+};
+
+export default Page;
+
+  // tRPC is the bridge between server side data and client side cache , so your app doesn't refetch data the server already got on each request
   // queryClient -> the server cache (holds fetched data like todo's)
 
   // The word "hydrate" = add water to something dry. The server-rendered HTML is "dry" (static, no JS state). Hydration "adds the state back" to make it fully alive and interactive.
@@ -32,8 +37,4 @@ const Page = async () => {
 // React Query hydration :	Filling the client's cache with server data so useQuery doesn't refetch
 
 
-
-
-};
-
-export default Page;
+// state = server data in shippable form (plain json)
