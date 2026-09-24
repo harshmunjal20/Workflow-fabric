@@ -102,6 +102,7 @@ export function RegisterForm() {
                            type = 'button' 
                            disabled = {isPending}
                            > {/* type is button not submit so it does not accidently trigger the submit action*/}
+                              <Image src = "/logos/github.svg" alt = "Google" width = {20} height = {20}/>
                               Continue With Github
                            </Button>
 
@@ -110,6 +111,7 @@ export function RegisterForm() {
                            type = 'button' 
                            disabled = {isPending}
                            > {/* type is button not submit so it does not accidently trigger the submit action*/}
+                              <Image src = "/logos/google.svg" alt = "Google" width = {20} height = {20}/>
                               Continue With Google
                            </Button>
                         </div>
@@ -181,7 +183,7 @@ export function RegisterForm() {
 
                         <div className="text-center text-sm">
                            Already have an account?{" "}
-                           <Link href="/login" className="underline-offset-4">
+                           <Link href="/login" className="underline offset-4">
                               Login
                            </Link>
                         </div>
