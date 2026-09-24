@@ -101,6 +101,8 @@ export function LoginForm() {
                            type = 'button' 
                            disabled = {isPending}
                            > {/* type is button not submit so it does not accidently trigger the submit action*/}
+                              <Image src="/logos/github.svg" alt = "github" width = {20} height = {20}/>
+                              {/* If the path starts with "/", it is root relative -> nesting is irrelevant like above, If it starts with "./" or "../", it is file relative -> nesting is relevant */}
                               Continue With Github
                            </Button>
 
@@ -109,6 +111,7 @@ export function LoginForm() {
                            type = 'button' 
                            disabled = {isPending}
                            > {/* type is button not submit so it does not accidently trigger the submit action*/}
+                              <Image src = "/logos/google.svg" alt = "Google" width = {20} height = {20}/>
                               Continue With Google
                            </Button>
                         </div>
@@ -160,7 +163,7 @@ export function LoginForm() {
 
                         <div className="text-center text-sm">
                            Don&apos;t have an account?{" "}
-                           <Link href="/signup" className="underline-offset-4">
+                           <Link href="/signup" className="underline offset-4">
                               Sign up
                            </Link>
                         </div>
