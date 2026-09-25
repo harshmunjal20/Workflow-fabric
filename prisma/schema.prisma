@@ -75,3 +75,8 @@ model Verification {
   @@index([identifier])
   @@map("verification") // mapping is used because we are using prisma client hence we need to map it to the database
 }
+
+model Workflow {
+  id String @id @default(cuid())
+  name String
+}

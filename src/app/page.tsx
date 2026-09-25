@@ -1,12 +1,25 @@
+"use client";
+
+import { Button } from '@/components/ui/button';
 import { requireAuth } from '@/lib/auth-utils';
-import {caller}  from '@/trpc/server';
-import {LogoutButton}  from  './logout';
+import { caller }  from '@/trpc/server';
+import { LogoutButton } from  './logout';
+import { useMutation, useQuery , useQueryClient } from '@tanstack/react-query';
+import { useTRPC } from '@/trpc/client';
+import { toast } from 'sonner';
 
 // we want a protected server component ie, login api should not give me login page even when i have logged in, also i want that home page should not be accessed directly , ie.login is mandatory
-const Page = async () => {
-  await requireAuth();
 
-  const data = await caller.getUsers();
+const Page = () => {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
+  const { data } = useQuery(trpc.getWorkflows.queryOptions());
+  const create = useMutation(trpc.createWorkflow.mutationOptions({
+    onSuccess : () => {
+      toast.success("Job queued");
+    },
+  }));
 
   return (
     <div className="min-h-screen min-w-screen flex items-center justify-center flex-col gap-y-6">
@@ -14,6 +27,10 @@ const Page = async () => {
       <pre className="text-left whitespace-pre-wrap">
         {JSON.stringify(data, null, 3)}
       </pre>
+      
+      <Button disabled = {create.isPending} onClick= {() => create.mutate()}>
+        Create workflow
+      </Button>
 
       <LogoutButton/>
     </div> 
