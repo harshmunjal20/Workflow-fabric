@@ -11,3 +11,14 @@ const handler = (req: Request) =>
   });
  
 export { handler as GET, handler as POST };
+
+// Flow summary
+
+// Client (tRPC client)
+//   → POST /api/trpc/user.getById
+//     → Next.js routes to this handler (POST export)
+//       → fetchRequestHandler parses the path
+//         → createTRPCContext runs (auth, db, etc.)
+//           → appRouter dispatches to user.getById
+//             → your procedure returns data
+//               → serialized back as HTTP response

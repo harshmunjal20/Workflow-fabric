@@ -1,12 +1,11 @@
 import 'server-only'; // <-- ensure this file cannot be imported from the client because it contains server-only code. This is important because the code in this file is responsible for creating the TRPC Context and the tRPC Router, which could only be used on the server. If this file is imported from the client, it could lead to security vulnerabilities and unexpected behavior.
 
-import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query';
+import { createTRPCOptionsProxy, TRPCQueryOptions } from '@trpc/tanstack-react-query';
 import { createTRPCClient, httpLink } from '@trpc/client';
 import { cache } from 'react';
 import { createTRPCContext } from './init';
 import { makeQueryClient } from './query-client';
 import { appRouter } from './routers/_app';
-import type { AppRouter } from './routers/_app';
 
 // IMPORTANT: Create a stable getter for the query client that
 //            will return the same client during the same request.
