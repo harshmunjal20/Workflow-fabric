@@ -5,6 +5,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { sarvam } from "sarvam-ai-sdk";
 import { groq } from "@ai-sdk/groq";
+import * as Sentry from "@sentry/nextjs";
 const google = createGoogleGenerativeAI();
 
 export const execute = inngest.createFunction(
@@ -13,6 +14,8 @@ export const execute = inngest.createFunction(
   async ({ event, step }) => {
    await step.sleep("pretend", "5s"); // pretend is the name of step
 
+   Sentry.setConversationId("my-conversation-123");
+
    // step.ai.wrap essentially allowing inngest to manage that ai operation as part of its durable workflow
    const {steps : geminiSteps } = await step.ai.wrap( // await step.ai.wrap means Run this ai-operation as an inngest step
       "gemini-generate-text", // The first argument is the step's identifier/name within the Inngest workflow.
@@ -20,7 +23,12 @@ export const execute = inngest.createFunction(
       { // The third argument is the options object passed to generateText
          model : google("gemini-3.5-flash-lite"),
          system : "You are a helpful Ai Assistant.", // → system instruction for the model.
-         prompt : "What is 2 + 2?"
+         prompt : "What is 2 + 2?",
+         experimental_telemetry : {
+            isEnabled : true,
+            recordInputs : true,
+            recordOutputs : true
+         }
       } // These are the arguments/options passed to generateText.
    );
 
@@ -30,7 +38,12 @@ export const execute = inngest.createFunction(
       { // The third argument is the options object passed to generateText
          model : sarvam("sarvam-105b-conversations"),
          system : "You are a helpful Ai Assistant.", // → system instruction for the model.
-         prompt : "What is 2 + 2?"
+         prompt : "What is 2 + 2?",
+         experimental_telemetry : {
+            isEnabled : true,
+            recordInputs : true,
+            recordOutputs : true
+         }
       } // These are the arguments/options passed to generateText.
    );
 
@@ -40,7 +53,12 @@ export const execute = inngest.createFunction(
       {
          model : groq("openai/gpt-oss-120b"),
          system : "You are a helpful Ai Assistant",
-         prompt : "What is 2 + 2"
+         prompt : "What is 2 + 2",
+         experimental_telemetry : {
+            isEnabled : true,
+            recordInputs : true,
+            recordOutputs : true
+         }
       }
    );
 
