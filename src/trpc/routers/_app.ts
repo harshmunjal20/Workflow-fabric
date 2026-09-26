@@ -1,6 +1,9 @@
 import  prisma  from '@/lib/db'; // why prisma ? because prisma is a database client that allows you to interact with your database in a type-safe way. It generates TypeScript types based on your database schema, which allows you to catch errors at compile time rather than at runtime.
 import {createTRPCRouter, protectedProcedure } from '@/trpc/init';
 import { inngest } from "@/inngest/client";
+import { google } from '@ai-sdk/google';
+import { generateText } from 'ai';
+
 async function sleep(ms : number) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
@@ -8,6 +11,14 @@ async function sleep(ms : number) {
 }
 
 export const appRouter = createTRPCRouter({
+  testAi : protectedProcedure.mutation(async () => {
+    await inngest.send({
+      name : "execute/ai",
+    })
+
+    return { success: true, message : "Job queued" };
+  }),
+
   getWorkflows: protectedProcedure.query(({ctx}) => {
       return prisma.workflow.findMany();
     }),
