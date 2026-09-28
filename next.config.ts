@@ -3,6 +3,15 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  async redirects() {
+    return [
+      {
+        source : "/", // root page
+        destination : "/workflows", // redirects to dashboard
+        permanent : false // false permanent redirect because other next js projects in my system will also become not permanent if I do this
+      }
+    ];
+  }
 };
 
 export default withSentryConfig(nextConfig, {
