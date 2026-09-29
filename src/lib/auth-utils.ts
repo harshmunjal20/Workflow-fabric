@@ -15,6 +15,7 @@ export const requireAuth = async () => {
    return session;
 }
 
+
 export const requireUnAuth = async () => {
    const session = await auth.api.getSession({
       headers : await headers(),
