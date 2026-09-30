@@ -6,6 +6,7 @@ import { cache } from 'react';
 import { createTRPCContext } from './init';
 import { makeQueryClient } from './query-client';
 import { appRouter } from './routers/_app';
+import { HydrationBoundary , dehydrate} from '@tanstack/react-query';
 
 // IMPORTANT: Create a stable getter for the query client that
 //            will return the same client during the same request.
@@ -19,6 +20,28 @@ export const trpc = createTRPCOptionsProxy({
   router: appRouter,
   queryClient: getQueryClient,
 });
+
+
+export function HydrateClient(props: { children: React.ReactNode }) {
+  const queryClient = getQueryClient();
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      {props.children}
+    </HydrationBoundary>
+  );
+}
+
+export function prefetch<T extends ReturnType<TRPCQueryOptions<any>>>(
+  queryOptions: T,
+) {
+  const queryClient = getQueryClient();
+  if (queryOptions.queryKey[1]?.type === 'infinite') {
+    void queryClient.infiniteQuery(queryOptions as any).catch(() => {}); 
+  } else {
+    void queryClient.query(queryOptions).catch(() => {}); // // Start the request and continue immediately ,void doesn’t handle rejected promises
+
+  }
+}
 
 // create a caller instance of the trpc client that can be used to call the trpc procedures on the server side.
 export const caller = appRouter.createCaller(createTRPCContext);

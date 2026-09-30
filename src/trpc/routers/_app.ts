@@ -1,7 +1,5 @@
-import { TRPCError } from "@trpc/server";
-import { inngest } from "@/inngest/client";
-import prisma from "@/lib/db"; // why prisma ? because prisma is a database client that allows you to interact with your database in a type-safe way. It generates TypeScript types based on your database schema, which allows you to catch errors at compile time rather than at runtime.
-import { createTRPCRouter, premiumProcedure, protectedProcedure } from "@/trpc/init";
+import { createTRPCRouter } from "@/trpc/init";
+import { workflowsRouter } from "@/features/workflows/server/routers";
 
 async function _sleep(ms: number) {
   return new Promise((resolve) => {
@@ -10,28 +8,7 @@ async function _sleep(ms: number) {
 }
 
 export const appRouter = createTRPCRouter({
-  testAi: premiumProcedure.mutation(async () => {
-    await inngest.send({
-      name: "execute/ai",
-    });
-
-    return { success: true, message: "Job queued" };
-  }),
-
-  getWorkflows: protectedProcedure.query(({ ctx }) => {
-    return prisma.workflow.findMany();
-  }),
-
-  createWorkflow: protectedProcedure.mutation(async () => {
-    await inngest.send({
-      name: "app/task.created", // name should be same as event
-      data: {
-        id: "122",
-      },
-    });
-
-    return { success: true, message: "Job queued" };
-  }),
+  workflows : workflowsRouter
 });
 
 // export type definition of API because we want to use it in the client side.
