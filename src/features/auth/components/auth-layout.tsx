@@ -7,6 +7,7 @@ const AuthLayout = ({children} : {children : React.ReactNode}) => {
          <div className= "flex w-full max-w-sm flex-col gap-6">
             <Link href = "/" className= "flex items-center gap-2 self-center font-medium">
                <Image src = "/logos/logo.svg" alt = "Workflow-fabric" width = {30} height = {30}/>
+               Workflow-fabric
             </Link>
             {children}
          </div>
