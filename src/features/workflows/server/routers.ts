@@ -2,6 +2,7 @@ import prisma from "@/lib/db";
 import { generateSlug } from "random-word-slugs";
 import { createTRPCRouter , premiumProcedure, protectedProcedure } from "@/trpc/init";
 import z from "zod"; // zod is a library for validating data
+import { PAGINATION } from "@/config/constants";
 
 // ctx provides things like database connection and logged in users
 export const workflowsRouter = createTRPCRouter({
@@ -51,11 +52,58 @@ export const workflowsRouter = createTRPCRouter({
       }),
    
    getMany : protectedProcedure
-      .query(({ctx }) => {
-         return prisma.workflow.findMany({
-            where : {
-               userId : ctx.auth.user.id,
-            }
-         });
+      .input(
+         z.object({
+            page : z.number().default(PAGINATION.DEFAULT_PAGE), // what page we are on this getMany procedure
+            pageSize : z
+               .number()
+               .min(PAGINATION.MIN_PAGE_SIZE)
+               .max(PAGINATION.MAX_PAGE_SIZE)
+               .default(PAGINATION.DEFAULT_PAGE_SIZE),
+            search : z.string().default("")
+         }) // validate input
+      )
+      .query(async ({ctx , input}) => {
+         const {page, pageSize, search} = input;
+         const [items, totalCount] = await Promise.all([
+            prisma.workflow.findMany({
+               // means skip the first 5 then take the next 5
+               skip : (page - 1) * pageSize,
+               take : pageSize, // no of records to return (take this many records :)
+               where : {
+                  userId : ctx.auth.user.id,
+                  name : {
+                     contains : search,
+                     mode : "insensitive"
+                  }
+               },
+               orderBy : {
+                  updatedAt : "desc", // sorts result by most recently updated first
+               }
+            }), // fetch the page of items
+            prisma.workflow.count({
+               where : {
+                  userId : ctx.auth.user.id,
+                  name : {
+                     contains : search,
+                     mode : "insensitive"
+                  }
+               }
+            }) // count total no of workflows for user
+         ])
+
+         const totalPages = Math.ceil(totalCount / pageSize);
+         const hasNextPage = page < totalPages;
+         const hasPreviousPage = page > 1;
+         
+         return {
+            items : items,
+            page,
+            pageSize,
+            totalCount,
+            totalPages,
+            hasNextPage,
+            hasPreviousPage
+         }
       }),
 });
