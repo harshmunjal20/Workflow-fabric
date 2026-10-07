@@ -15,14 +15,13 @@ export const useSuspenseWorkflows = () => {
 /* Hook to create a new workflow  */
 // no unexpected side effects now, useCreateWorkflow was having previously side effectes like pushing router to other page
 export const useCreateWorkflow = () => {
-   const router = useRouter();
    const trpc = useTRPC();
    const queryClient = useQueryClient();
 
    return useMutation(trpc.workflows.create.mutationOptions({
       onSuccess : (data) => {
          toast.success(`Workflow ${data.name} created successfully `);
-         queryClient.invalidateQueries(trpc.workflows.getMany.queryOptions({})); // This tells TanStack Query: "The cached workflow list may be outdated—refresh it."
+         queryClient.invalidateQueries(trpc.workflows.getMany.queryOptions({})); // This tells TanStack Query: "The cached workflow list may be outdated—refresh it." Invalidating a cache usually marks it as stale
          // empty object passed to this getMany params, because we are not invalidating for specifiic state of params, we are invalidating for all of them
       }, // we get the data we just created , here names were generated randomly
       onError : (error) => {
@@ -35,3 +34,21 @@ export const useCreateWorkflow = () => {
 // This creates a transferable snapshot containing query data and metadata. It doesn’t fetch anything or delete the server cache. Your framework carries that snapshot to the browser
 
 // queryClient is the object that manages TanStack Query’s cache. It keeps track of fetched data, loading states, errors, and whether data needs refreshing. Think of queryClient as the cache manager, useSuspenseQuery is how your components asks that manager for data.
+
+//Hook to remove a workflow
+export const useRemoveWorkflow = () => {
+   const trpc = useTRPC();
+   const queryClient = useQueryClient();
+
+   return useMutation(
+      trpc.workflows.remove.mutationOptions({
+         onSuccess : (data) => {
+            toast.success(`Workflow "${data.name}" removed successfully`);
+            queryClient.invalidateQueries(trpc.workflows.getMany.queryFilter());
+         },
+         onError : () => {
+            toast.error("Failed to remove workflow");
+         }
+      })
+   )
+}
