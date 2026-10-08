@@ -16,14 +16,14 @@ export const workflowsRouter = createTRPCRouter({
    }),
 
    remove : protectedProcedure
-   .input(z.object({id : z.string() })) // The mutation needs input to know which record to delete. this requires input to be an object with an id property whose value is a string
-   .mutation(({ctx, input}) => {
-      return prisma.workflow.delete({
-         where : {
-            id : input.id,
-            userId : ctx.auth.user.id, // userId does not alone makes workflow unique
-         }
-      }); // deleting the user who actually created the workflow
+      .input(z.object({id : z.string() })) // The mutation needs input to know which record to delete. this requires input to be an object with an id property whose value is a string
+      .mutation(({ctx, input}) => {
+         return prisma.workflow.delete({
+            where : {
+               id : input.id,
+               userId : ctx.auth.user.id, // userId does not alone makes workflow unique
+            }
+         }); // deleting the user who actually created the workflow
    }), // used remove because delete is reserved keyword in javascript
 
    updateName : protectedProcedure
@@ -43,10 +43,10 @@ export const workflowsRouter = createTRPCRouter({
    getOne : protectedProcedure
       .input(z.object({ id : z.string() }))
       .query(({ ctx, input }) => {
-         return prisma.workflow.findUnique({
+         return prisma.workflow.findUniqueOrThrow({
             where : {
                id : input.id,
-               user: { id: ctx.auth.user.id }
+               userId: ctx.auth.user.id
             }
          }) // findUnique is used bcoz it will either find this or throw an error
       }),
