@@ -3,6 +3,9 @@ import { generateSlug } from "random-word-slugs";
 import { createTRPCRouter , premiumProcedure, protectedProcedure } from "@/trpc/init";
 import z from "zod"; // zod is a library for validating data
 import { PAGINATION } from "@/config/constants";
+import { NodeType } from "@/generated/prisma/enums";
+import type {Node} from "@xyflow/react";
+import type {Edge} from "@xyflow/react";
 
 // ctx provides things like database connection and logged in users
 export const workflowsRouter = createTRPCRouter({
@@ -10,7 +13,15 @@ export const workflowsRouter = createTRPCRouter({
       return prisma.workflow.create({
          data : {
             name : generateSlug(3), // 3 is the number of words
-            userId : ctx.auth.user.id
+            userId : ctx.auth.user.id,
+            // every time workflow will be created , these set of nodes will also be created
+            nodes : {
+               create : {
+                  type : NodeType.INITIAL,
+                  position : {x : 0, y : 0},
+                  name : NodeType.INITIAL
+               }
+            }
          },
       });
    }),
@@ -42,14 +53,42 @@ export const workflowsRouter = createTRPCRouter({
 
    getOne : protectedProcedure
       .input(z.object({ id : z.string() }))
-      .query(({ ctx, input }) => {
-         return prisma.workflow.findUniqueOrThrow({
+      .query( async ({ ctx, input }) => {
+         const workflow = await prisma.workflow.findUniqueOrThrow({
             where : {
                id : input.id,
                userId: ctx.auth.user.id
-            }
+            },
+            include : {
+               nodes : true,
+               connections : true
+            } // without include prisma returns the workflow's own fields such as id, name and userId, but doesn't return the related nodes and connections array
          }) // findUnique is used bcoz it will either find this or throw an error
-      }),
+         
+         // This code converts the nodes returned by Prisma into the shape React Flow expects.
+         const nodes : Node[] = workflow.nodes.map((node) => ({
+            id : node.id,
+            type : node.type,
+            position : node.position as {x : number, y : number},
+            data : (node.data as Record<string, unknown>) || {}
+         })); // .map() goes through each database node and creates a new object
+
+         // This code converts the connections(edges) returned by prisma into the shape React Flow expects.
+         const edges : Edge[] = workflow.connections.map((connection) => ({
+            id : connection.id,
+            source : connection.fromNodeId,
+            target : connection.toNodeId,
+            sourceHandle : connection.fromOutput, // foTi -> from output to input
+            targetHandle : connection.toInput
+         }));
+
+         return {
+            id : workflow.id,
+            name : workflow.name,
+            nodes,
+            edges
+         }
+      }),  // Without include, Prisma returns the workflow’s own fields, such as id, name, and userId, but doesn’t return the related nodes array.
    
    getMany : protectedProcedure
       .input(
