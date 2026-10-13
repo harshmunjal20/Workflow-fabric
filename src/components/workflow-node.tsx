@@ -49,7 +49,7 @@ export function WorkflowNode({
                {description && (
                   <p className= "text-muted-foreground truncate text-sm">
                      {description} 
-                  </p> // desccription helpful ex. Not configured
+                  </p> // description helpful ex. Not configured
                )}
             </NodeToolbar>
          )}
